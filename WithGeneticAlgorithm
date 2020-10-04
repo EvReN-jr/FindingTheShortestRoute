@@ -1,0 +1,138 @@
+class GA:
+  def __init__(self,nOs=1,ranges=0):
+    """
+    nOs: Number of state. For create the list of ranges.
+    """
+    # Initialize.
+    # If you provide a list of ranges, the list of ranges will be saved as 'self' list.
+    if type(ranges)!=int:
+      self.ranges=ranges
+      self.nOs=ranges.shape[0]
+    else:
+      self.nOs=nOs
+      self.ranges=self.create_list_of_ranges()
+
+  def create_list_of_ranges(self):
+    ranges=np.zeros((self.nOs,self.nOs),dtype="int16")
+
+    for i in range(self.nOs):
+      rangesX=np.random.randint(10,100,(1,self.nOs-1))
+      rangesX=np.insert(rangesX,[i],0)
+      rangesY=rangesX.reshape(self.nOs,1)
+      ranges[i]=rangesX
+
+      for j in range(ranges.shape[0]):
+        ranges[j][i]=rangesY[j][0]
+
+    return ranges
+  
+  def create_route(self):
+    """
+    Creates random routes and compares them after return the best (shortest) route.
+    """
+    c_v=0
+    for i in range(self.nOr):
+      steps=[]
+      while len(steps)<self.nOs:
+        state=np.random.randint(0,self.nOs)
+        if state not in steps :
+          steps.append(state)# Create route.
+
+      total_range=self.calculate_total_range(steps)# Calculate long of the route.
+        
+      if (c_v > total_range) or (i==0):
+        min_range=[total_range,steps]
+
+      c_v=total_range
+
+    return min_range
+
+  def calculate_total_range(self,steps):
+    """
+    Calculate total range to list of ranges.
+    """
+    total_range=0
+    for j in range(self.nOs-1):
+      total_range+=self.ranges[steps[j]][steps[j+1]]
+    return total_range
+
+  def create_pool(self):
+    # Create pool of routes.
+    pool=[]
+    for i in range(self.pool_size):
+      pool.append(self.create_route())
+    
+    return pool
+  
+  def crossing_over(self,pool):
+    """
+    Crossing over function.
+    """
+    # Initialize.
+    split_part=int(self.nOs/2)+1# To detect the segment where the split will happen.
+    kid=np.full(self.nOs,77)
+
+    # The selection is according to the success of the parent routes.
+    # Create of the kid route.
+    for i in range(self.pool_size-1):
+      if pool[i][0] <= pool[i+1][0]:
+        kid[:split_part]=pool[i][1][:split_part]
+
+        for k in range(self.nOs-split_part+1,self.nOs):
+          for j in pool[i+1][1]:
+            if j not in kid:
+              kid[k]=j
+              break
+      else:
+        kid[:split_part]=pool[i+1][1][:split_part]
+
+        for k in range(self.nOs-split_part+1,self.nOs):
+          for j in pool[i][1]:
+            if j not in kid:
+              kid[k]=j
+              break
+
+      if type(self.pool_size/100)==int:
+        if i%(int(self.pool_size/100))==0:
+          kid=self.motation(kid)# Random motation.
+
+      kids_total_range=self.calculate_total_range(kid)# Calculate total range to kid toute.
+      if (kids_total_range<= pool[i][0] and kids_total_range<= pool[i+1][0]):# If kid best than parents add the list of pool.
+        pool.append([kids_total_range,kid])
+
+    #For select the best route/s.
+    pooln=np.array(pool)
+    res=np.where(pooln[:,0]==min(pooln[:,0]))  
+    last_array=[]
+    for i in res:
+      for j in i:
+        last_array.append(pool[j])
+
+    return last_array
+    
+  def motation(self,route):
+    while True:
+      # Choose random two point and change.
+      stateZ=np.random.randint(0,self.nOs)
+      stateO=np.random.randint(0,self.nOs)
+      if stateZ!=stateO:
+        for i in range(len(route)):
+          if route[i]==stateZ:
+            route[i]=stateO
+        
+          elif route[i]==stateO:
+            route[i]=stateZ  
+        break
+    return route
+
+  def find_route(self,nOr,pool_size,nOre):
+    """
+    nOr: Number of route. 
+    nOre: Number of repetitions.
+    """
+    self.nOr=nOr
+    self.pool_size=pool_size
+    pool=self.create_pool()
+    for i in range(nOre):
+      res=self.crossing_over(pool)
+    return res
