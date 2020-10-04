@@ -1,0 +1,55 @@
+# Firstly, we need a ranges list.
+
+import numpy as np
+
+# CREATE THE LIST OF RANGES
+#######################################################################################
+# Automatic Generation
+
+size=5
+ranges=np.zeros((size,size),dtype="int16")# Create the draft array.
+
+for i in range(size):
+
+  rangesX=np.random.randint(10,100,(1,size-1))# Create the elements use random select 10-100 between.
+  rangesX=np.insert(rangesX,[i],0)# I am both the closest and the furthest neighbor to myself. I assert here, I am the closest neighbor to myself.
+  rangesY=rangesX.reshape(size,1)
+  ranges[i]=rangesX
+
+  for j in range(ranges.shape[0]):
+    ranges[j][i]=rangesY[j][0]
+ 
+print(ranges)
+
+"""
+size=5
+[[ 0 74 26 14 42]
+ [74  0 60 19 71]
+ [26 60  0 57 67]
+ [14 19 57  0 63]
+ [42 71 67 63  0]]
+"""
+
+# Manuel Generation
+
+from google.colab import output# For clear the console screen.
+
+size=int(input("Enter List Of Ranges Size: "))
+ranges=np.zeros((size,size),dtype="int16")
+
+for i in range(size):
+  rangesX=np.zeros((1,size-1),dtype="int16")
+
+  for j in range(rangesX[0].shape[0]):
+    rangesX[0][j]=int(input(f"Enter the {j+1} element of the {i+1} row: "))
+
+  rangesX=np.insert(rangesX,[i],0)
+  rangesY=rangesX.reshape(size,1)
+  ranges[i]=rangesX
+
+  for j in range(ranges.shape[0]):
+    ranges[j][i]=rangesY[j][0]
+
+  output.clear()
+  
+print(ranges)
