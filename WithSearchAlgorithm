@@ -1,0 +1,48 @@
+import numpy as np
+
+# FIND BEST ROUTE WITH SEARCH ALGORITHM
+#######################################################################################
+
+def find_route(ranges):
+  route_list=[]# Create empty list for routes.
+  
+  for i in range(ranges.shape[0]):
+    way_points=[i]# Create the list and add first element the list.
+    points=np.arange(ranges.shape[0])# Create the list of points.
+    point=i
+    points=np.delete(points,np.where(points == point)[0][0])# Delete the point in the points list.
+    total_range=0
+    
+    while True:
+      status=False
+      arr=ranges[point]
+      arrx=np.delete(arr,np.where(arr==min(arr))[0][0])# Find the zero value and delete.
+      
+      while True:
+        min_points=np.where(arr==min(arrx))# Find index of the minimum value/s.
+        for j in min_points:
+        
+          for k in j:
+            if k in points:# If has never no selected of X point.
+              way_points.append(k)
+              point=k
+              total_range+=arr[k]
+              points=np.delete(points,np.where(points == k)[0][0])
+              status=True
+              break
+              
+          if status:
+            break
+            
+          else:
+            arrx=np.delete(arrx,np.where(arrx==min(arrx)))# If the minimum points have been selected before. The list narrows to set new minimum points.
+            break
+            
+        if status:
+          break
+          
+      if points.shape[0]==0:
+        route_list.append([way_points,total_range])# Create the result list.
+        break
+      
+  return route_list
